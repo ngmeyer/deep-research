@@ -4,9 +4,9 @@ This file provides guidance to Claude Code when working with this repository.
 
 ## Project Overview
 
-Auto-Research is a Claude Code skill for multi-source deep research with confidence-scored claims, contradiction detection, and optional critique loop-back. Three-phase architecture: DISCOVER, SYNTHESIZE, CRITIQUE.
+Deep Research is a Claude Code skill for multi-source deep research with confidence-scored claims, contradiction detection, and optional critique loop-back. Three-phase architecture: DISCOVER, SYNTHESIZE, CRITIQUE.
 
-**Repo:** github.com/ngmeyer/auto-research
+**Repo:** github.com/ngmeyer/deep-research
 **Author:** Neal Meyer
 
 ## File Structure

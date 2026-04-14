@@ -1,8 +1,8 @@
-# Auto-Research
+# Deep Research
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Skill-blueviolet?logo=anthropic)](https://claude.ai/code)
-[![GitHub Stars](https://img.shields.io/github/stars/ngmeyer/auto-research?style=social)](https://github.com/ngmeyer/auto-research)
+[![GitHub Stars](https://img.shields.io/github/stars/ngmeyer/deep-research?style=social)](https://github.com/ngmeyer/deep-research)
 [![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Linux%20%7C%20Windows-lightgrey)]()
 
 A Claude Code skill that researches any topic across multiple search providers simultaneously, extracts confidence-scored claims, surfaces contradictions, and produces cited research briefs.
@@ -28,25 +28,25 @@ Three phases, not seven. Complexity lives in search quality and synthesis rigor,
 ## Install
 
 ```bash
-git clone https://github.com/ngmeyer/auto-research.git
+git clone https://github.com/ngmeyer/deep-research.git
 cd auto-research
 
 # Global install
-mkdir -p ~/.claude/skills/auto-research
-cp SKILL.md ~/.claude/skills/auto-research/SKILL.md
+mkdir -p ~/.claude/skills/deep-research
+cp SKILL.md ~/.claude/skills/deep-research/SKILL.md
 
 # Or per-project
-mkdir -p .claude/skills/auto-research
-cp SKILL.md .claude/skills/auto-research/SKILL.md
+mkdir -p .claude/skills/deep-research
+cp SKILL.md .claude/skills/deep-research/SKILL.md
 ```
 
 ## Usage
 
 ```
-/auto-research state of AI agents in 2026
-/auto-research --quick what is DMAD in multi-agent debate?
-/auto-research --deep Tavily vs Exa vs Perplexity for agent search
-/auto-research --agent --save docs/research/competitors.md competitor landscape for X
+/deep-research state of AI agents in 2026
+/deep-research --quick what is DMAD in multi-agent debate?
+/deep-research --deep Tavily vs Exa vs Perplexity for agent search
+/deep-research --agent --save docs/research/competitors.md competitor landscape for X
 ```
 
 ## Modes

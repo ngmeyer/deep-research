@@ -1,11 +1,11 @@
 ---
-name: auto-research
+name: deep-research
 description: >
   Multi-source deep research that produces cited, confidence-scored briefs.
   Searches across Exa, Tavily, and web in parallel. Extracts claims, scores
   confidence, surfaces contradictions. Works with zero API keys (WebSearch
   fallback), improves with each provider added.
-  Use when: 'research this', 'deep research', 'auto research', 'investigate',
+  Use when: 'research this', 'deep research', 'deep research', 'investigate',
   'what do we know about', 'find out about', or any open-ended research question.
 user-invocable: true
 allowed-tools: ["Read", "Write", "Edit", "Glob", "Grep", "Bash", "Agent", "WebFetch", "WebSearch", "mcp__claude_ai_Tavily__tavily_search", "mcp__claude_ai_Tavily__tavily_extract", "mcp__claude_ai_Tavily__tavily_research", "mcp__claude_ai_Exa__web_search_exa", "mcp__claude_ai_Exa__web_fetch_exa"]
