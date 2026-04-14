@@ -5,7 +5,7 @@
 [![GitHub Stars](https://img.shields.io/github/stars/ngmeyer/deep-research?style=social)](https://github.com/ngmeyer/deep-research)
 [![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Linux%20%7C%20Windows-lightgrey)]()
 
-A Claude Code skill that researches any topic across multiple search providers simultaneously, extracts confidence-scored claims, surfaces contradictions, and produces cited research briefs.
+A Claude Code skill that researches any topic across multiple search providers simultaneously, extracts cross-referenced findings with confidence scores, builds an evidence matrix, surfaces contradictions, and produces cited research briefs.
 
 Works with zero API keys. Improves with each provider you add.
 
@@ -14,16 +14,18 @@ Works with zero API keys. Improves with each provider you add.
 ```
 Topic/Question
       |
+  PLAN (interactive research plan — user approves subtopics)
+      |
   DISCOVER (parallel: WebSearch + Tavily + Exa)
       |
-  SYNTHESIZE (claims + confidence + contradictions)
+  SYNTHESIZE (claims + cross-refs + evidence matrix + contradictions)
       |
   CRITIQUE (--deep only: adversarial review + gap-fill loop-back)
       |
-  Research Brief + Key Findings in chat
+  Research Brief + Evidence Matrix + Key Findings in chat
 ```
 
-Three phases, not seven. Complexity lives in search quality and synthesis rigor, not pipeline overhead.
+Three phases with an interactive planning step. Complexity lives in search quality and synthesis rigor, not pipeline overhead.
 
 ## Install
 
@@ -76,28 +78,54 @@ The skill detects available providers automatically. With zero API keys, it uses
 *12 sources consulted across WebSearch, Tavily, Exa. Apr 13, 2026.*
 
 ## Key Findings
-1. **Finding** -- summary with inline citation *(high confidence)*
-2. **Finding** -- summary *(medium confidence)*
-3. **Finding** -- summary *(sources conflict -- see below)*
+
+### F1: [Atomic claim as title]
+[Synthesis with inline [S1], [S3] citations]
+**Confidence:** High | **Triangulation:** 3 sources, 2 methods
+**Cross-refs:** Extends F2. Contradicts F4 on [specific dimension].
+
+### F2: [Atomic claim as title]
+...
+
+## Evidence Matrix
+
+| Finding | S1 | S2 | S3 | S4 | S5 |
+|---------|:--:|:--:|:--:|:--:|:--:|
+| F1      | +  |    | +  |    | +  |
+| F2      | +  | -  | +  | +  |    |
+
+*Legend: + supports, - contradicts, blank = not addressed*
 
 ## Analysis
-[Synthesis: what the findings mean together]
+[Synthesis: what the findings mean together, referencing F1, F2, etc.]
 
-## Contradictions & Open Questions
-[Conflicting claims with sources on each side]
+## Contradictions & Tensions
+[Both sides with source IDs and reasoning]
+
+## Terminology Map
+[Canonical terms with source-specific aliases]
+
+## Knowledge Gaps
+[Unanswered questions, missing perspectives, stale data]
 
 ## Sources
-[Numbered table with title, publication, date, type]
+| ID | Title | Author | Date | Type | Cited by |
+|----|-------|--------|------|------|----------|
+| S1 | [title](url) | [author] | [date] | academic | F1, F2 |
 ```
 
 ## Why This Works
 
-1. **Multi-perspective search** -- Generates 2-4 query angles per topic (technical, market, practitioner, contrarian). Catches what single-angle search misses. Inspired by Stanford's STORM framework.
-2. **Confidence scoring** -- Every claim gets HIGH / MEDIUM / LOW / CONFLICTING based on source count and quality. No confidence theater.
-3. **Contradiction surfacing** -- When sources disagree, both sides are presented with reasoning about which is more authoritative. Conflicts are features, not bugs.
-4. **Graceful degradation** -- Zero-config WebSearch fallback. No "install these 5 tools first" barrier.
-5. **Critique loop-back** (deep mode) -- Adversarial self-review identifies gaps, runs targeted follow-up searches, re-scores claims.
-6. **Concise output** -- 1-3 page briefs. Depth from claim quality, not word count.
+1. **Interactive research plan** -- You approve the subtopics before searching starts. Add, remove, or refine angles. Inspired by Google Deep Research.
+2. **Multi-perspective search** -- Generates 2-4 query angles per topic (technical, market, practitioner, contrarian). Catches what single-angle search misses. Inspired by Stanford's STORM framework.
+3. **Cross-referenced findings** -- Every finding gets an ID (F1, F2). Cross-refs show which findings extend, contradict, or qualify each other. Navigate the brief like a knowledge graph.
+4. **Evidence matrix** -- One table shows which sources support or contradict each finding. See convergence and divergence at a glance.
+5. **Confidence scoring with triangulation** -- Per-claim HIGH / MEDIUM / LOW / CONFLICTING with explicit triangulation type (data, methodological, perspective).
+6. **Contradiction surfacing** -- When sources disagree, both sides are presented with source IDs and reasoning. Conflicts are features, not bugs.
+7. **Terminology map** -- When sources use different names for the same concept, a canonical term is established with aliases. No confusion from jargon.
+8. **Knowledge gaps** -- Explicit section listing what the research couldn't answer. Missing perspectives, stale data, unanswered questions.
+9. **Graceful degradation** -- Zero-config WebSearch fallback. No "install these 5 tools first" barrier.
+10. **Critique loop-back** (deep mode) -- Adversarial self-review identifies gaps, runs targeted follow-up searches, re-scores claims.
 
 ## What It Won't Do
 

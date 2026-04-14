@@ -12,16 +12,16 @@ allowed-tools: ["Read", "Write", "Edit", "Glob", "Grep", "Bash", "Agent", "WebFe
 argument-hint: "<topic or question> [--quick] [--deep] [--agent] [--save path/to/output.md]"
 ---
 
-# Auto-Research — Multi-Source Deep Research
+# Deep Research — Multi-Source Research with Cross-Referencing
 
-Research any topic across multiple search providers simultaneously. Produces a confidence-scored research brief with inline citations, contradiction surfacing, and structured source tracking.
+Research any topic across multiple search providers simultaneously. Produces a confidence-scored research brief with cross-referenced findings, evidence matrix, contradiction surfacing, and structured source tracking.
 
 ## Core Design
 
-**Three phases, not seven.** Complexity should live in search quality and synthesis rigor, not pipeline overhead.
+**Three phases with an interactive planning step.** Complexity lives in search quality and synthesis rigor, not pipeline overhead.
 
 ```
-DISCOVER (parallel) → SYNTHESIZE (one pass) → CRITIQUE (--deep only, loop-back)
+PLAN (interactive) → DISCOVER (parallel) → SYNTHESIZE (cross-reference) → CRITIQUE (--deep only)
 ```
 
 **Graceful degradation.** Works with zero API keys using Claude's built-in WebSearch. Each additional provider (Tavily, Exa) adds coverage without changing the workflow.
@@ -77,6 +77,29 @@ Parse flags from `$ARGUMENTS`. Remove flags, remainder is the research topic.
 
 Each perspective becomes a parallel search query.
 
+### Phase 0b: Research Plan (interactive, skip in --quick and --agent)
+
+Before searching, generate a structured research plan and present it to the user for approval. This is the most impactful quality lever — it ensures the research covers the right angles.
+
+```
+## Research Plan: [Topic]
+
+I'll investigate these angles:
+1. [Subtopic A] — [what we're looking for, which perspective]
+2. [Subtopic B] — [what we're looking for]
+3. [Subtopic C] — [contrasting viewpoint or edge case]
+4. [Subtopic D] — [practical/applied angle]
+
+Estimated: [N] sources across [available providers].
+
+Adjust this plan or say "go" to start.
+```
+
+The user can add/remove subtopics, refine scope, or approve as-is. Each approved subtopic becomes a search perspective in Phase 1.
+
+In `--quick` mode: skip the plan, use the auto-generated perspectives from Phase 0.
+In `--agent` mode: skip the plan, proceed autonomously.
+
 ### Phase 1: DISCOVER — Parallel Multi-Source Search
 
 **Detect available providers** by attempting to use each tool. If a tool call fails with "not available" or similar, fall back gracefully.
@@ -123,62 +146,103 @@ For each search perspective (2-4 queries):
 
 Process all discovered sources in a single synthesis pass. This is where the research brief takes shape.
 
-**Step 2a: Extract atomic claims**
+**Step 2a: Assign IDs and extract atomic claims**
 
-For each source, extract discrete factual claims. A claim is a single assertion with a subject, verb, and specific value:
-- YES: "Tavily was acquired by Nebius in February 2026"
-- NO: "Tavily is a popular search tool"
+Assign each source an ID (`S1`, `S2`, ...) as it's processed. For each source, extract discrete factual claims. A claim is a single assertion with a subject, verb, and specific value:
+- YES: "Tavily was acquired by Nebius in February 2026" `[S3]`
+- NO: "Tavily is a popular search tool" (vague, not falsifiable)
 
-**Step 2b: Score confidence per claim**
+Each finding gets an ID (`F1`, `F2`, ...) for cross-referencing.
 
-| Confidence | Criteria | Marker |
-|------------|----------|--------|
-| **High** | 3+ independent sources agree | No marker needed |
-| **Medium** | 1-2 credible sources | *(medium confidence)* |
-| **Low** | Single source, or blog/social only | *(unverified)* |
-| **Conflicting** | Sources directly contradict | *(sources conflict — see below)* |
+**Step 2b: Coreference pass — group related claims**
 
-**Step 2c: Surface contradictions**
+Before scoring, identify claims that refer to the same phenomenon using different terminology. Group them under a canonical term:
+- If Source A calls it "context window stuffing" and Source B calls it "retrieval augmentation" but they describe the same mechanism, merge into one finding with a note listing alternate terms.
+- If two claims seem similar but differ meaningfully (scope, mechanism, conditions), keep them separate and note the distinction.
 
-When sources disagree on a factual claim, don't pick a winner silently. Surface the contradiction:
-```
-> **Conflicting:** Source A (TechCrunch, Jan 2026) reports X raised $50M Series B.
-> Source B (company blog, Feb 2026) states the round was $45M.
-> The company's own blog is likely more authoritative.
-```
+**Step 2c: Score confidence with triangulation**
 
-**Step 2d: Write the research brief**
+| Confidence | Criteria | Triangulation | Marker |
+|------------|----------|---------------|--------|
+| **High** | 3+ independent sources agree | Data or methodological triangulation | No marker needed |
+| **Medium** | 1-2 credible sources | Single-method confirmation | *(medium confidence)* |
+| **Low** | Single source, or blog/social only | No triangulation | *(unverified)* |
+| **Conflicting** | Sources directly contradict | — | *(sources conflict — see Evidence Matrix)* |
 
-Structure the output as:
+**Step 2d: Build cross-references**
+
+For each finding, note:
+- Which sources support it (by ID)
+- Which findings it relates to (extends, contradicts, or qualifies)
+- Which search perspectives surfaced it
+
+**Step 2e: Write the research brief**
+
+Structure the output using the cross-referenced template:
 
 ```markdown
 # Research Brief: [Topic]
 
-*[N] sources consulted across [providers used]. [Date].*
+*[N] sources consulted across [providers used]. [Date]. Mode: [quick/standard/deep].*
 
 ## Key Findings
 
-1. **[Finding 1]** — [1-2 sentence summary with inline citation]
-2. **[Finding 2]** — [summary with citation]
-3. **[Finding 3]** — [summary with citation]
+### F1: [Atomic claim as title]
+[1-3 sentence synthesis with inline [S1], [S3] citations]
+**Confidence:** High | **Triangulation:** 3 sources, 2 methods
+**Cross-refs:** Extends F2. Contradicts F4 on [specific dimension].
+
+### F2: [Atomic claim as title]
+[synthesis with [S2], [S4] citations]
+**Confidence:** Medium | **Triangulation:** 2 sources, same method
+**Cross-refs:** Builds on F1.
+
 [5-10 findings for standard, 3-5 for quick, 10-15 for deep]
+
+## Evidence Matrix
+
+| Finding | S1 | S2 | S3 | S4 | S5 |
+|---------|:--:|:--:|:--:|:--:|:--:|
+| F1 | + | | + | | + |
+| F2 | + | - | + | + | |
+| F3 | | + | | | - |
+
+*Legend: + supports, - contradicts, blank = not addressed*
 
 ## Analysis
 
 [2-4 paragraphs synthesizing the findings into a coherent narrative.
 Don't just list facts — explain what they mean together.
-Flag where the evidence is strong vs. where it's thin.]
+Flag where the evidence is strong vs. where it's thin.
+Reference findings by ID (F1, F2) so the reader can trace back.]
 
-## Contradictions & Open Questions
+## Contradictions & Tensions
 
-[List any conflicting claims with sources on each side.
-List questions the research couldn't answer.]
+[For each contradiction, present both sides with source IDs:]
+> **F2 vs F3:** [S2] claims X, but [S5] found the opposite when [condition].
+> Resolution likely depends on [factor].
+
+## Terminology Map
+
+| Canonical Term | Also Called (by source) |
+|---------------|----------------------|
+| [term] | "[alt1]" [S1], "[alt2]" [S3] |
+
+[Include only when sources use different names for the same concept.
+Omit this section if no terminology conflicts were found.]
+
+## Knowledge Gaps
+
+> **[Gap]** No source addressed [specific unanswered question].
+> **[Gap]** All sources predate [date] — no data on [recent development].
+> **[Gap]** Only [perspective] was represented — [missing perspective] not found.
 
 ## Sources
 
-| # | Title | Source | Date | Type | Used For |
-|---|-------|--------|------|------|----------|
-| 1 | [title] | [publication] | [date] | [type] | [which findings cite this] |
+| ID | Title | Author | Date | Type | Cited by |
+|----|-------|--------|------|------|----------|
+| S1 | [title](url) | [author] | [date] | academic | F1, F2, F4 |
+| S2 | [title](url) | [author] | [date] | official | F2, F3 |
 ```
 
 ### Phase 3: CRITIQUE — Adversarial Review (--deep only)
